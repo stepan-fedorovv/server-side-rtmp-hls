@@ -1,0 +1,47 @@
+version: "3.10"
+networks:
+  rtmp:
+
+services:
+  rtmp:
+    build: ./rtmp_server
+    ports:
+      - "1935:1935"
+      - "8080:8080"
+    container_name: rtmp_server
+    volumes:
+      - ./data:/tmp/hls
+    networks:
+      - rtmp
+
+  auth:
+    build: .
+    container_name: auth_local_local
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+      - ./apps/user/static:/code/apps/user/static
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres_db
+    networks:
+      - rtmp
+
+  postgres_db:
+    container_name: diploma_postgres_local
+    image: postgres:16.0-alpine
+    volumes:
+      - diploma_postgres_data:/var/lib/postgresql/data_pg_data/
+    environment:
+      POSTGRES_DB: "diploma"
+      POSTGRES_USER: "diploma"
+      POSTGRES_PASSWORD: "diploma"
+    ports:
+      - "5435:5432"
+    networks:
+      - rtmp
+
+volumes:
+  diploma_postgres_data:
+  auth:
