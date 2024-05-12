@@ -12,9 +12,8 @@ class Base(Configuration):
     SECRET_KEY = values.Value(default='dev-key')
 
     DEBUG = values.BooleanValue(default=True)
-
     ALLOWED_HOSTS = ['*']
-
+    CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
     INSTALLED_APPS = [
         'django.contrib.admin',
         'django.contrib.auth',
@@ -23,6 +22,7 @@ class Base(Configuration):
         'django.contrib.messages',
         'django.contrib.staticfiles',
         'rest_framework',
+        'silk',
         'restdoctor',
         'django_filters',
         'django_structlog',
@@ -31,26 +31,30 @@ class Base(Configuration):
         'corsheaders',
         'drf_yasg',
         'pgbulk',
+        'apps.widget_settings',
         'apps.user',
-    ]
 
+    ]
+    SILKY_PYTHON_PROFILER = True
+    SILKY_PYTHON_PROFILER_BINARY = True
     MIDDLEWARE = [
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'corsheaders.middleware.CorsMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
-        'restdoctor.django.middleware.api_selector.ApiSelectorMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'restdoctor.django.middleware.api_selector.ApiSelectorMiddleware',
+        'silk.middleware.SilkyMiddleware',
         # 'django_structlog.middlewares.RequestMiddleware',
     ]
+
     STATIC_URL = 'static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'apps\\user\\static')
 
     STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
-
 
     ROOT_URLCONF = 'config.urls'
 
@@ -75,8 +79,6 @@ class Base(Configuration):
     REST_FRAMEWORK = {
         'DATETIME_FORMAT': '%s',  # for using date and time in timestamp
         'DEFAULT_AUTHENTICATION_CLASSES': [
-            'rest_framework_simplejwt.authentication.JWTAuthentication',
-            'rest_framework.authentication.BasicAuthentication',
             'rest_framework.authentication.SessionAuthentication',
         ],
         'DEFAULT_RENDERER_CLASSES': [
@@ -86,10 +88,6 @@ class Base(Configuration):
         'EXCEPTION_HANDLER': 'restdoctor.rest_framework.exception_handlers.exception_handler',
     }
 
-    AUTHENTICATION_BACKENDS = [
-        'django.contrib.auth.backends.ModelBackend',
-    ]
-
     DATABASES = {
         'default': {
             'ENGINE': values.Value(
@@ -98,8 +96,8 @@ class Base(Configuration):
             'NAME': values.Value(environ_name='DEFAULT_DATABASE_NAME', default='diploma'),
             'USER': values.Value(environ_name='DEFAULT_DATABASE_USER', default='diploma'),
             'PASSWORD': values.Value(environ_name='DEFAULT_DATABASE_PASSWORD', default='diploma'),
-            'HOST': values.Value(environ_name='DEFAULT_DATABASE_HOST', default='diploma_postgres_local'),
-            'PORT': values.Value(environ_name='DEFAULT_DATABASE_PORT', default='5432'),
+            'HOST': values.Value(environ_name='DEFAULT_DATABASE_HOST', default='localhost'),
+            'PORT': values.Value(environ_name='DEFAULT_DATABASE_PORT', default='5435'),
         }
     }
 
@@ -123,10 +121,8 @@ class Base(Configuration):
     TIME_ZONE = 'UTC'
 
     USE_I18N = True
-
     USE_TZ = True
     DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
     CORS_ORIGIN_ALLOW_ALL = True
     CORS_ALLOW_HEADERS = (  # noqa: static object
         'x-requested-with',
@@ -143,13 +139,16 @@ class Base(Configuration):
         'maxdataserviceversion',
         'content-disposition',
     )
-
+    # CSRF_TRUSTED_ORIGINS = ['http://localhost:8080/']
     CORS_ALLOW_METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS')
     CORS_ORIGIN_WHITELIST = values.ListValue(
         [
             'http://127.0.0.1:3000',
             'http://0.0.0.0:3000',
             'http://localhost:3000',
+            'http://localhost:8080',
+            'http://127.0.0.1:8080',
+            'http://0.0.0.0:8080',
             'https://realdomain',
         ]
     )

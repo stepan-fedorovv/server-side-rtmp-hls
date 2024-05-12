@@ -1,19 +1,17 @@
-import jwt
-from django.conf import settings
-from django.contrib.auth import login, authenticate, logout
-from rest_framework.request import Request
-
-from apps.user.dto.authenticate import LoginDto
-from apps.user.logic.interactors.stream_key import stream_key__decode
-from apps.user.logic.interactors.user import user__generate_stream_key, user__authenticate
-from apps.user.models import User
+from django.contrib.auth import login, logout
 from rest_framework import permissions, status
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from restdoctor.rest_framework import viewsets
 
 from apps.user.api.serializers import RegistrationSerializer, UserSerializer, LoginSerializer
+from apps.user.dto.authenticate import LoginDto
 from apps.user.logic.facades.user import user__registration
+from apps.user.logic.interactors.stream_key import stream_key__decode
+from apps.user.logic.interactors.user import user__generate_stream_key, user__authenticate
+from apps.user.models import User
+from apps.widget_settings.api.serializers import WidgetSettingsPydanticSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -32,6 +30,9 @@ class UserViewSet(viewsets.ModelViewSet):
         },
         'login': {
             'request': LoginSerializer
+        },
+        'settings': {
+            'request': WidgetSettingsPydanticSerializer
         }
     }
 
@@ -58,8 +59,8 @@ class UserViewSet(viewsets.ModelViewSet):
         request_serializer.is_valid(raise_exception=False)
         user = user__authenticate(
             login_dto=LoginDto(
-                username=request_serializer.validated_data.get('username'),
-                password=request_serializer.validated_data.get('password'),
+                username=request_serializer.data.get('username'),
+                password=request_serializer.data.get('password'),
             )
         )
         login(request, user)
@@ -91,6 +92,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def me(self, request: Request) -> Response:
         return Response(self.get_response_serializer(instance=request.user).data, status=status.HTTP_200_OK)
+
+
 
         # @action(detail=True, methods=['get'])
         # def get_chunk(self, request: Request, client_id: typing.Any) -> Response:

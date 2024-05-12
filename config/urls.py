@@ -10,5 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),]
+
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 if settings.DEBUG:
     urlpatterns += static(prefix=settings.STATIC_URL, document_root=settings.STATIC_ROOT)
